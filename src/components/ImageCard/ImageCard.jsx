@@ -1,5 +1,3 @@
-// Картка зображення
-
 function ImageCard({ src, alt }) {
   return (
     <div>

@@ -2,25 +2,36 @@ import { useState, useEffect } from "react";
 import ImageCard from "../ImageCard/ImageCard";
 import { fetchImages } from "../../App";
 import { Audio } from "react-loader-spinner";
-// import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn";
+import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
 
-function ImageGallery({ query }) {
+function ImageGallery({ query, openModal }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     const getImages = async () => {
       setLoading(true);
-      const data = await fetchImages(query);
-      setImages(data.results);
+      try {
+        const data = await fetchImages(query, page);
+        setImages((prevImages) => [...prevImages, ...data.results]);
+        setTotalPages(data.total_pages);
+      } catch (err) {
+        setError(err);
+      }
       setLoading(false);
     };
 
     getImages();
-  }, [query]);
+  }, [query, page]);
 
-  if (loading)
+  const handleLoadMore = () => {
+    setPage((prevPage) => prevPage + 1);
+  };
+
+  if (loading && page === 1) {
     return (
       <div
         style={{
@@ -39,13 +50,19 @@ function ImageGallery({ query }) {
         />
       </div>
     );
-  if (error)
+  }
+
+  if (error) {
     return (
       <p>
         Oops... Sorry, something went wrong. Try again. Error: {error.message}
       </p>
     );
-  if (images.length === 0) return <p>No images found.</p>;
+  }
+
+  if (images.length === 0 && !loading) {
+    return <p>No images found.</p>;
+  }
 
   return (
     <>
@@ -55,10 +72,25 @@ function ImageGallery({ query }) {
             <ImageCard
               src={image.urls.small}
               alt={image.alt_description || "Image"}
+              onClick={() => openModal(image)}
             />
           </li>
         ))}
       </ul>
+      {page < totalPages && !loading && (
+        <LoadMoreBtn onClick={handleLoadMore} />
+      )}
+      {loading && page > 1 && (
+        <Audio
+          height="80"
+          width="80"
+          radius="9"
+          color="green"
+          ariaLabel="three-dots-loading"
+          wrapperStyle
+          wrapperClass
+        />
+      )}
     </>
   );
 }

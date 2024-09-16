@@ -3,6 +3,7 @@
 // Toaster
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import css from "./SearchBar.module.css";
 
 // Створення компонента SearchBar
 function SearchBar({ onSubmit }) {
@@ -20,7 +21,7 @@ function SearchBar({ onSubmit }) {
   };
 
   return (
-    <header>
+    <header className={css.header}>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
